@@ -1,49 +1,49 @@
 import {
-  createAsyncMiddleware,
-  type JsonRpcMiddleware,
+	type JsonRpcMiddleware,
+	createAsyncMiddleware,
 } from '@metamask/json-rpc-engine'
-import type { Json, JsonRpcParams } from '@metamask/utils'
-import type { Signer } from 'ethers'
-import { Web3RequestKind } from '../utils'
-import type { WalletPermissionSystem } from './WalletPermissionSystem'
+import type { Account, Address } from 'viem'
 
-export function makeAccountsMiddleware(
-  emit: (eventName: string, ...args: any[]) => void,
-  walletsThunk: () => Signer[],
-  wps: WalletPermissionSystem
-) {
-  const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
-    createAsyncMiddleware(async (req, res, next) => {
-      switch (req.method) {
-        case 'eth_accounts':
-          if (wps.isPermitted(Web3RequestKind.Accounts, '')) {
-            res.result = await Promise.all(
-              walletsThunk().map(async (wallet) =>
-                (await wallet.getAddress()).toLowerCase()
-              )
-            )
-          } else {
-            res.result = []
-          }
-          break
+import { Web3RequestKind } from '../utils.js'
+import type { WalletPermissionSystem } from './WalletPermissionSystem.js'
 
-        case 'eth_requestAccounts':
-          wps.permit(Web3RequestKind.Accounts, '')
+type AccountsMiddlewareConfig = {
+	emit: (eventName: string, ...args: [Address[]]) => void
+	accounts: Account[]
+	wps: WalletPermissionSystem
+}
 
-          const accounts = await Promise.all(
-            walletsThunk().map(async (wallet) =>
-              (await wallet.getAddress()).toLowerCase()
-            )
-          )
+export function createAccountsMiddleware({
+	emit,
+	accounts,
+	wps,
+}: AccountsMiddlewareConfig) {
+	const middleware: JsonRpcMiddleware<[], Address[]> = createAsyncMiddleware(
+		async (req, res, next) => {
+			switch (req.method) {
+				case 'eth_accounts':
+					if (wps.isPermitted(Web3RequestKind.Accounts, '')) {
+						res.result = accounts.map((a) => a.address)
+					} else {
+						res.result = []
+					}
+					break
 
-          emit('accountsChanged', accounts)
-          res.result = accounts
-          break
+				case 'eth_requestAccounts': {
+					wps.permit(Web3RequestKind.Accounts, '')
 
-        default:
-          void next()
-      }
-    })
+					const addresses = accounts.map((a) => a.address)
 
-  return middleware
+					emit('accountsChanged', addresses)
+					res.result = addresses
+					break
+				}
+
+				default:
+					void next()
+			}
+		},
+	)
+
+	return middleware
 }

@@ -1,46 +1,45 @@
 import {
-  createAsyncMiddleware,
-  type JsonRpcMiddleware,
+	type JsonRpcMiddleware,
+	createAsyncMiddleware,
 } from '@metamask/json-rpc-engine'
-import type { Json, JsonRpcParams } from '@metamask/utils'
-import type { Signer } from 'ethers'
-import { Web3RequestKind } from '../utils'
-import type { WalletPermissionSystem } from './WalletPermissionSystem'
-import { Deny } from '../errors'
+import type { Account } from 'viem'
 
-export function makePermissionMiddleware(
-  emit: (eventName: string, ...args: any[]) => void,
-  walletsThunk: () => Signer[]
-) {
-  const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
-    createAsyncMiddleware(async (req, res, next) => {
-      switch (req.method) {
-        // todo: use the Wallet Permissions System (WPS) to handle method
-        case 'wallet_requestPermissions': {
-          if (
-            // @ts-expect-error todo: parse params
-            req.params.length === 0 ||
-            // @ts-expect-error todo: parse params
-            req.params[0].eth_accounts === undefined
-          ) {
-            throw Deny()
-          }
+import { Deny } from '../errors.js'
 
-          const accounts = await Promise.all(
-            walletsThunk().map(async (wallet) =>
-              (await wallet.getAddress()).toLowerCase()
-            )
-          )
-          emit('accountsChanged', accounts)
+type PermissionMiddlewareConfig = {
+	emit: (eventName: string, ...args: any[]) => void
+	accounts: Account[]
+}
 
-          res.result = [{ parentCapability: 'eth_accounts' }]
-          break
-        }
+export function createPermissionMiddleware({
+	emit,
+	accounts,
+}: PermissionMiddlewareConfig) {
+	const middleware: JsonRpcMiddleware<
+		{ eth_accounts?: string }[],
+		[{ parentCapability: 'eth_accounts' }]
+	> = createAsyncMiddleware(async (req, res, next) => {
+		switch (req.method) {
+			// todo: use the Wallet Permissions System (WPS) to handle method
+			case 'wallet_requestPermissions': {
+				if (
+					req.params?.length === 0 ||
+					req.params?.[0].eth_accounts === undefined
+				) {
+					throw Deny()
+				}
 
-        default:
-          void next()
-      }
-    })
+				const addresses = accounts.map((a) => a.address)
+				emit('accountsChanged', addresses)
 
-  return middleware
+				res.result = [{ parentCapability: 'eth_accounts' }]
+				break
+			}
+
+			default:
+				void next()
+		}
+	})
+
+	return middleware
 }
