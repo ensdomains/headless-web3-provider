@@ -1,52 +1,32 @@
-name: Semantic Release
+name: Publish Package to npm
 on:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-
-jobs:
   release:
-    name: Release
+    types: [published]
+jobs:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write 
-      id-token: write 
+      contents: read
+      id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Enable corepack
         run: corepack enable pnpm
+
       - uses: actions/setup-node@v4
         with:
           cache: 'pnpm'
           node-version: 22
-
-      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-        run: pnpm audit signatures
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - run: pnpm install --frozen-lockfile
+          registry-url: 'https://registry.npmjs.org'
+      - run: pnpm install
+      - run: pnpm build
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
           version: latest
+
       - name: Run Biome
         run: biome ci .
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install chromium
-      - name: Run tests
-        run: pnpm test
-
-      - name: Release
+      - run: npm publish --provenance --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm semantic-release
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
