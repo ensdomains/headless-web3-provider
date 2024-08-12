@@ -1,7 +1,7 @@
-import { JsonRpcEngine } from '@metamask/json-rpc-engine'
 import type { Chain, LocalAccount } from 'viem'
 
 import { UnsupportedMethod } from './errors.js'
+import { Router } from './middleware.js'
 import type { ChainTransport, JsonRpcRequest } from './types.js'
 import { createAccountsMiddleware } from './wallet/AccountsMiddleware.js'
 import { createAuthorizeMiddleware } from './wallet/AuthorizeMiddleware.js'
@@ -40,29 +40,34 @@ export function createRpcEngine({
 	getChain,
 	getChainTransport,
 }: RpcEngineConfig) {
-	const engine = new JsonRpcEngine()
+	// switch (req.method) {
+	// 	case
+	// }
+	const engine = new Router()
 
-	engine.push((req, _res, next) => {
-		if (debug) logger?.(`Request: ${req.method}`)
-		next()
-	})
+	if (debug) {
+		engine.use((req, _res, next) => {
+			if (debug) logger?.(`Request: ${req.method}`)
+			next()
+		})
+	}
 
-	engine.push(createAuthorizeMiddleware({ waitAuthorization }))
-	engine.push(createAccountsMiddleware({ emit, accounts, wps }))
-	engine.push(createSignMessageMiddleware({ account: accounts[0] }))
-	engine.push(createChainMiddleware({ getChain, addChain, switchChain }))
-	engine.push(
+	engine.use(createAuthorizeMiddleware({ waitAuthorization }))
+	engine.use(createAccountsMiddleware({ emit, accounts, wps }))
+	engine.use(createSignMessageMiddleware({ account: accounts[0] }))
+	engine.use(createChainMiddleware({ getChain, addChain, switchChain }))
+	engine.use(
 		createTransactionMiddleware({
 			getChain,
 			account: accounts[0],
 			getChainTransport,
 		}),
 	)
-	engine.push(createPermissionMiddleware({ emit, accounts }))
-	engine.push(createPassThroughMiddleware({ getChainTransport }))
+	engine.use(createPermissionMiddleware({ emit, accounts }))
+	engine.use(createPassThroughMiddleware({ getChainTransport }))
 
-	engine.push((_req, _res, _next, end) => {
-		end(UnsupportedMethod())
+	engine.use((_req, _res, _next) => {
+		throw UnsupportedMethod()
 	})
 
 	return engine

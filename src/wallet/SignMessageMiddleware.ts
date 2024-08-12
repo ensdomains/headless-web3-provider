@@ -1,42 +1,33 @@
-import {
-	type JsonRpcMiddleware,
-	createAsyncMiddleware,
-} from '@metamask/json-rpc-engine'
-import type { Json, JsonRpcParams } from '@metamask/utils'
+import type {} from '@metamask/utils'
 import { hexToString } from 'viem'
 import type { LocalAccount } from 'viem/accounts'
+import type { Middleware } from '../middleware.js'
 
 export function createSignMessageMiddleware({
 	account,
-}: { account: LocalAccount }) {
-	const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
-		createAsyncMiddleware(async (req, res, next) => {
-			switch (req.method) {
-				case 'personal_sign': {
-					// @ts-expect-error
-					const message = hexToString(req.params[0])
+}: { account: LocalAccount }): Middleware {
+	return async (req, res, next) => {
+		switch (req.method) {
+			case 'personal_sign': {
+				const message = hexToString(req.params[0])
 
-					const signature = await account.signMessage({ message })
+				const signature = await account.signMessage({ message })
 
-					res.result = signature
-					break
-				}
-
-				case 'eth_signTypedData_v3':
-				case 'eth_signTypedData_v4': {
-					// @ts-expect-error todo: parse params
-					const msgParams = JSON.parse(req.params[1])
-
-					const signature = await account.signTypedData(msgParams)
-
-					res.result = signature
-					break
-				}
-
-				default:
-					void next()
+				res.result = signature
+				break
 			}
-		})
 
-	return middleware
+			case 'eth_signTypedData_v4': {
+				const msgParams = JSON.parse(req.params[1])
+
+				const signature = await account.signTypedData(msgParams)
+
+				res.result = signature
+				break
+			}
+
+			default:
+				void next()
+		}
+	}
 }
