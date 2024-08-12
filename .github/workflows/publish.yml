@@ -27,6 +27,6 @@ jobs:
 
       - name: Run Biome
         run: biome ci .
-      - run: npm publish --provenance --access public
+      - run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
