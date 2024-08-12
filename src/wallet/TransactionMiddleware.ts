@@ -1,15 +1,11 @@
 import {
-	type JsonRpcMiddleware,
-	createAsyncMiddleware,
-} from '@metamask/json-rpc-engine'
-import type { Json, JsonRpcParams } from '@metamask/utils'
-import {
 	type Chain,
 	type LocalAccount,
 	type TransactionRequest,
 	createWalletClient,
 	formatTransaction,
 } from 'viem'
+import type { Middleware } from '../middleware.js'
 import type { ChainTransport } from '../types.js'
 
 export function createTransactionMiddleware({
@@ -20,36 +16,34 @@ export function createTransactionMiddleware({
 	getChain: () => Chain
 	account: LocalAccount
 	getChainTransport: () => ChainTransport
-}) {
+}): Middleware {
 	const walletClient = createWalletClient({
 		account,
 		chain: getChain(),
 		transport: getChainTransport,
 	})
-	const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
-		createAsyncMiddleware(async (req, res, next) => {
-			switch (req.method) {
-				case 'eth_sendTransaction': {
-					// @ts-expect-error todo: parse params
-					const jsonRpcTx = req.params[0] as JsonRpcTx
+	return async (req, res, next) => {
+		switch (req.method) {
+			case 'eth_sendTransaction': {
+				const jsonRpcTx = req.params[0]
 
-					const viemTx = formatTransaction(jsonRpcTx)
+				console.log(jsonRpcTx)
 
-					try {
-						res.result = await walletClient.sendTransaction(
-							viemTx as TransactionRequest,
-						)
-					} catch (e) {
-						console.error('Error submitting transaction', e, viemTx)
-					}
+				const viemTx = formatTransaction(jsonRpcTx)
 
-					break
+				try {
+					res.result = await walletClient.sendTransaction(
+						viemTx as TransactionRequest,
+					)
+				} catch (e) {
+					console.error('Error submitting transaction', e, viemTx)
 				}
 
-				default:
-					void next()
+				break
 			}
-		})
 
-	return middleware
+			default:
+				void next()
+		}
+	}
 }

@@ -27,7 +27,6 @@ The `headless-web3-provider` library emulates a Web3 wallet similar to Metamask 
 | personal_sign              | Yes         |
 | eth_signTypedData          | Yes         |
 | eth_signTypedData_v1       | Yes         |
-| eth_signTypedData_v3       | Yes         |
 | eth_signTypedData_v4       | Yes         |
 | eth_call                   | No          |
 | eth_estimateGas            | No          |

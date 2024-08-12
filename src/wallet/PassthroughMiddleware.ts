@@ -1,8 +1,4 @@
-import {
-	type JsonRpcMiddleware,
-	createAsyncMiddleware,
-} from '@metamask/json-rpc-engine'
-
+import type { Middleware } from '../middleware.js'
 import type { ChainTransport } from '../types.js'
 
 // User safe methods
@@ -43,18 +39,13 @@ type PassthroughMiddlewareConfig = {
  */
 export function createPassThroughMiddleware({
 	getChainTransport,
-}: PassthroughMiddlewareConfig) {
-	const passThroughMiddleware: JsonRpcMiddleware<any, any> =
-		createAsyncMiddleware(async (req, res, next) => {
-			if (methods.includes(req.method as Method)) {
-				const transport = getChainTransport()
-				res.result = await transport.request(req).catch((e) => {
-					console.error('Error!!!', e)
-				})
-			} else {
-				next()
-			}
-		})
-
-	return passThroughMiddleware
+}: PassthroughMiddlewareConfig): Middleware {
+	return async (req, res, next) => {
+		if (methods.includes(req.method as Method)) {
+			const transport = getChainTransport()
+			res.result = await transport.request(req)
+		} else {
+			next()
+		}
+	}
 }

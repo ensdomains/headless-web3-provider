@@ -1,18 +1,16 @@
-import type { JsonRpcEngine } from '@metamask/json-rpc-engine'
+import type { Json, JsonRpcError } from '@metamask/utils'
 import {
 	http,
 	type Chain,
-	type EIP1193Parameters,
 	type EIP1193Provider,
 	type Hex,
 	type LocalAccount,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-
-import type { Json } from '@metamask/utils'
 import { EventEmitter } from './EventEmitter.js'
 import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
+import type { Router } from './middleware.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
@@ -41,7 +39,7 @@ export class Web3ProviderBackend
 		type: 'authorize' | 'reject'
 		notify: () => Promise<void>
 	}[] = []
-	private engine: JsonRpcEngine
+	private router: Router
 
 	constructor({ privateKeys, chains, ...config }: Web3ProviderConfig) {
 		super()
@@ -51,7 +49,7 @@ export class Web3ProviderBackend
 		privateKeys.forEach((pk) => this.accounts.push(privateKeyToAccount(pk)))
 
 		this.wps = new WalletPermissionSystem(config.permitted)
-		this.engine = createRpcEngine({
+		this.router = createRpcEngine({
 			emit: (eventName, ...args) => this.emit(eventName, ...args),
 			debug: config.debug,
 			logger: config.logger,
@@ -67,15 +65,10 @@ export class Web3ProviderBackend
 
 	isMetaMask?: boolean
 
-	// @ts-expect-error
-	async request(req: EIP1193Parameters): Promise<Json> {
-		const res = await this.engine
-			.handle({
-				method: req.method,
-				params: req.params as `0x${string}`[],
-				id: null,
-				jsonrpc: '2.0',
-			})
+	// @ts-expect-error MM utils vs viem
+	async request(req: JsonRpcRequest): Promise<Json> {
+		const res = await this.router
+			.run(req, { result: null, id: '2.0', jsonrpc: '2.0' })
 			.catch((e) => {
 				console.error(e)
 				throw e
@@ -85,7 +78,7 @@ export class Web3ProviderBackend
 			return res.result
 		}
 
-		throw res.error
+		throw (res as { error: JsonRpcError }).error
 	}
 
 	isConnected() {

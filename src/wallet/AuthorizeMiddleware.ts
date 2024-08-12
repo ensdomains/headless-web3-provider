@@ -1,8 +1,4 @@
-import {
-	type JsonRpcMiddleware,
-	createAsyncMiddleware,
-} from '@metamask/json-rpc-engine'
-
+import type { Middleware } from '../middleware.js'
 import type { JsonRpcRequest } from '../types.js'
 
 // User un-safe methods
@@ -16,7 +12,6 @@ const methods = [
 	'personal_sign',
 	'eth_signTypedData',
 	'eth_signTypedData_v1',
-	'eth_signTypedData_v3',
 	'eth_signTypedData_v4',
 ]
 
@@ -34,20 +29,17 @@ type AuthorizeMiddlewareConfig = {
  */
 export function createAuthorizeMiddleware({
 	waitAuthorization,
-}: AuthorizeMiddlewareConfig) {
-	const authorizeMiddleware: JsonRpcMiddleware<string[], string[]> =
-		createAsyncMiddleware(async (req, _res, next) => {
-			if (methods.includes(req.method)) {
-				// Pass `next` to the authorization handler.
-				// This is necessary because many tests simulate authorization by calling:
-				// `await wallet.authorize('eth_someMethod')`
-				// Followed by actions dependent on the authorization and invocation of the method.
-				// This ensures that the method is both authorized and executed as expected.
-				await waitAuthorization(req as JsonRpcRequest, next)
-			} else {
-				next()
-			}
-		})
-
-	return authorizeMiddleware
+}: AuthorizeMiddlewareConfig): Middleware {
+	return async (req, _, next) => {
+		if (methods.includes(req.method)) {
+			// Pass `next` to the authorization handler.
+			// This is necessary because many tests simulate authorization by calling:
+			// `await wallet.authorize('eth_someMethod')`
+			// Followed by actions dependent on the authorization and invocation of the method.
+			// This ensures that the method is both authorized and executed as expected.
+			await waitAuthorization(req as JsonRpcRequest, next)
+		} else {
+			next()
+		}
+	}
 }

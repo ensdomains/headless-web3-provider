@@ -1,10 +1,7 @@
-import {
-	type JsonRpcMiddleware,
-	createAsyncMiddleware,
-} from '@metamask/json-rpc-engine'
 import type { Account } from 'viem'
 
 import { Deny } from '../errors.js'
+import type { Middleware } from '../middleware.js'
 
 type PermissionMiddlewareConfig = {
 	emit: (eventName: string, ...args: any[]) => void
@@ -14,18 +11,12 @@ type PermissionMiddlewareConfig = {
 export function createPermissionMiddleware({
 	emit,
 	accounts,
-}: PermissionMiddlewareConfig) {
-	const middleware: JsonRpcMiddleware<
-		{ eth_accounts?: string }[],
-		[{ parentCapability: 'eth_accounts' }]
-	> = createAsyncMiddleware(async (req, res, next) => {
+}: PermissionMiddlewareConfig): Middleware {
+	return async (req, res, next) => {
 		switch (req.method) {
 			// todo: use the Wallet Permissions System (WPS) to handle method
 			case 'wallet_requestPermissions': {
-				if (
-					req.params?.length === 0 ||
-					req.params?.[0].eth_accounts === undefined
-				) {
+				if (req.params?.[0].eth_accounts === undefined) {
 					throw Deny()
 				}
 
@@ -39,7 +30,5 @@ export function createPermissionMiddleware({
 			default:
 				void next()
 		}
-	})
-
-	return middleware
+	}
 }
