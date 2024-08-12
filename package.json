@@ -39,12 +39,12 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/cawabunga/headless-web3-provider.git"
+		"url": "git+https://github.com/ensdomains/headless-web3-provider.git"
 	},
 	"bugs": {
-		"url": "https://github.com/cawabunga/headless-web3-provider/issues"
+		"url": "https://github.com/ensdomains/headless-web3-provider/issues"
 	},
-	"homepage": "https://github.com/cawabunga/headless-web3-provider#readme",
+	"homepage": "https://github.com/ensdomains/headless-web3-provider#readme",
 	"scripts": {
 		"test": "playwright test",
 		"build": "tsc -p tsconfig.build.json",
