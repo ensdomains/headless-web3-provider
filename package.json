@@ -1,6 +1,6 @@
 {
 	"name": "@ensdomains/headless-web3-provider",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Headless MetaMask for testing Ethereum apps",
 	"author": "v1rtl <hi@v1rtl.site>",
 	"license": "MIT",
