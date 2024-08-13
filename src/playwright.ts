@@ -51,7 +51,8 @@ export async function injectHeadlessWeb3Provider({
 
 			// @ts-expect-error
 			// biome-ignore lint/suspicious/noImportAssign: EventEmitter does not exist in browser context
-			EventEmitter = window.EventEmitter
+			// biome-ignore lint/style/noVar: <explanation>
+			var EventEmitter = window.EventEmitter
 
 			Object.defineProperty(window, 'ethereum', {
 				value: new Proxy(new EventEmitter(), {
