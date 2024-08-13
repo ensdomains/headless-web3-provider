@@ -4,32 +4,26 @@
 	"description": "Headless MetaMask for testing Ethereum apps",
 	"author": "v1rtl <hi@v1rtl.site>",
 	"license": "MIT",
-	"module": "./dist/index.js",
-	"types": "./dist/types.d.ts",
 	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/types.d.ts"
-		},
 		"./playwright": {
-			"import": "./dist/playwright.js",
-			"types": "./dist/playwright.d.ts"
+			"types": "./dist/playwright.d.ts",
+			"import": "./dist/playwright.js"
 		},
 		"./types": {
 			"types": "./dist/types.d.ts",
 			"import": "./dist/types.js"
 		},
 		"./factory": {
-			"import": "./dist/factory.js",
-			"types": "./dist/factory.d.ts"
+			"types": "./dist/factory.d.ts",
+			"import": "./dist/factory.js"
 		},
 		"./backend": {
-			"import": "./dist/backend.js",
-			"types": "./dist/backend.d.ts"
+			"types": "./dist/backend.d.ts",
+			"import": "./dist/backend.js"
 		},
 		"./utils": {
-			"import": "./dist/utils.js",
-			"types": "./dist/utils.d.ts"
+			"types": "./dist/utils.d.ts",
+			"import": "./dist/utils.js"
 		}
 	},
 	"type": "module",
