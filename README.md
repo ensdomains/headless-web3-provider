@@ -1,6 +1,6 @@
 # Headless Web3 Provider
 
-[![Playwright Tests](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml) ![NPM Downloads](https://img.shields.io/npm/dw/headless-web3-provider)
+[![Playwright Tests](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml) ![NPM Downloads](https://img.shields.io/npm/dy/@ensdomains/headless-web3-provider)
 
 > headless-web3-provider fork by ENS. It uses [viem](https://viem.sh), has fewer dependencies and supports EIP-6963 (ported from [this PR](https://github.com/cawabunga/headless-web3-provider/pull/21)).
 
@@ -62,8 +62,7 @@ export const test = base.extend({
   injectWeb3Provider: async ({ signers }, use) => {
     await use((page, privateKeys = signers) =>
       injectHeadlessWeb3Provider(
-        page,
-       { privateKeys, chains: [anvil] }
+       { page, privateKeys, chains: [anvil] }
       )
     )
   },

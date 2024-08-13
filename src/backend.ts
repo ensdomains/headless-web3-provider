@@ -182,6 +182,14 @@ export class Web3ProviderBackend
 		return this.createAction({ requestKind, type: 'authorize' })
 	}
 
+	async changeAccounts(privateKeys: Hex[]): Promise<void> {
+		this.#accounts = privateKeys.map((key) => privateKeyToAccount(key))
+		this.emit(
+			'accountsChanged',
+			this.#accounts.map((wallet) => wallet.address.toLowerCase()),
+		)
+	}
+
 	async reject(
 		requestKind: Web3RequestKind,
 		reason: ErrorWithCode = Deny(),
