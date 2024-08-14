@@ -5,11 +5,14 @@
 	"author": "v1rtl <hi@v1rtl.site>",
 	"license": "MIT",
 	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
-		}
+		"import": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "require": {
+      "types": "./index.d.cts",
+      "default": "./index.cjs"
+    }
 	},
 	"type": "module",
 	"types": "./dist/index.d.ts",
@@ -29,9 +32,7 @@
 	"homepage": "https://github.com/ensdomains/headless-web3-provider#readme",
 	"scripts": {
 		"test": "playwright test",
-		"build:esm": "tsup",
-		"build:cjs": "tsup --config tsup.cjs.config.ts",
-		"build": "pnpm build:cjs && pnpm build:esm",
+		"build": "tsup",
 		"check": "biome check",
 		"fmt": "biome format",
 		"lint": "biome lint"
