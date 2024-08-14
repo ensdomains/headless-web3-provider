@@ -5,33 +5,16 @@
 	"author": "v1rtl <hi@v1rtl.site>",
 	"license": "MIT",
 	"exports": {
-		"./playwright": {
-			"types": "./dist/playwright.d.ts",
-			"import": "./dist/playwright.js",
-			"require": "./dist/playwright.cjs"
-		},
-		"./types": {
-			"types": "./dist/types.d.ts",
-			"import": "./dist/types.js",
-			"require": "./dist/types.cjs"
-		},
-		"./factory": {
-			"types": "./dist/factory.d.ts",
-			"import": "./dist/factory.js",
-			"require": "./dist/factory.cjs"
-		},
-		"./backend": {
-			"types": "./dist/backend.d.ts",
-			"import": "./dist/backend.js",
-			"require": "./dist/backend.cjs"
-		},
-		"./utils": {
-			"types": "./dist/utils.d.ts",
-			"import": "./dist/utils.js",
-			"require": "./dist/utils.cjs"
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
 		}
 	},
 	"type": "module",
+	"types": "./dist/index.d.ts",
+	"module": "./dist/index.js",
+	"main": "./dist/index.cjs",
 	"sideEffects": false,
 	"files": [
 		"dist"
