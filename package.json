@@ -1,18 +1,18 @@
 {
 	"name": "@ensdomains/headless-web3-provider",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Headless MetaMask for testing Ethereum apps",
 	"author": "v1rtl <hi@v1rtl.site>",
 	"license": "MIT",
 	"exports": {
 		"import": {
-      "types": "./index.d.ts",
-      "default": "./index.js"
-    },
-    "require": {
-      "types": "./index.d.cts",
-      "default": "./index.cjs"
-    }
+			"types": "./index.d.ts",
+			"default": "./index.js"
+		},
+		"require": {
+			"types": "./index.d.cts",
+			"default": "./index.cjs"
+		}
 	},
 	"type": "module",
 	"types": "./dist/index.d.ts",
