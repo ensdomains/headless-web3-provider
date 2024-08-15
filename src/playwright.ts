@@ -1,5 +1,5 @@
+import { randomUUID } from 'node:crypto'
 import type { Page } from '@playwright/test'
-
 import { EventEmitter } from './EventEmitter.js'
 import type { Web3ProviderConfig } from './backend.js'
 import { createHeadlessWeb3Provider } from './factory.js'
@@ -43,7 +43,7 @@ export async function injectHeadlessWeb3Provider({
 		content: `window.EventEmitter = ${EventEmitter.toString()}`,
 	})
 
-	const uuid = crypto.randomUUID()
+	const uuid = randomUUID()
 
 	await page.addInitScript(
 		([uuid]) => {
