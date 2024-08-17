@@ -41,7 +41,7 @@ export class Web3ProviderBackend
 		type: 'authorize' | 'reject'
 		notify: () => Promise<void>
 	}[] = []
-	#engine: JsonRpcEngine
+	#engine: (accounts: LocalAccount[]) => JsonRpcEngine
 
 	constructor({ privateKeys, chains, ...config }: Web3ProviderConfig) {
 		super()
@@ -51,25 +51,26 @@ export class Web3ProviderBackend
 		privateKeys.forEach((pk) => this.#accounts.push(privateKeyToAccount(pk)))
 
 		this.#wps = new WalletPermissionSystem(config.permitted)
-		this.#engine = createRpcEngine({
-			emit: (eventName, ...args) => this.emit(eventName, ...args),
-			debug: config.debug,
-			logger: config.logger,
-			wps: this.#wps,
-			accounts: this.#accounts,
-			waitAuthorization: (req, task) => this.waitAuthorization(req, task),
-			addChain: (chain) => this.addChain(chain),
-			switchChain: (chainId) => this.switchChain(chainId),
-			getChain: () => this.getChain(),
-			getChainTransport: () => this.getChainTransport(),
-		})
+		this.#engine = (accounts) =>
+			createRpcEngine({
+				emit: (eventName, ...args) => this.emit(eventName, ...args),
+				debug: config.debug,
+				logger: config.logger,
+				wps: this.#wps,
+				accounts,
+				waitAuthorization: (req, task) => this.waitAuthorization(req, task),
+				addChain: (chain) => this.addChain(chain),
+				switchChain: (chainId) => this.switchChain(chainId),
+				getChain: () => this.getChain(),
+				getChainTransport: () => this.getChainTransport(),
+			})
 	}
 
 	isMetaMask?: boolean
 
 	// @ts-expect-error
 	async request(req: EIP1193Parameters): Promise<Json> {
-		const res = await this.#engine
+		const res = await this.#engine(this.#accounts)
 			.handle({
 				method: req.method,
 				params: req.params as `0x${string}`[],

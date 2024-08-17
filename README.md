@@ -1,6 +1,6 @@
 # Headless Web3 Provider
 
-[![Playwright Tests](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml) ![NPM Downloads](https://img.shields.io/npm/dy/@ensdomains/headless-web3-provider)
+[![Playwright Tests](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/ensdomains/headless-web3-provider/actions/workflows/ci.yml) [![NPM Downloads](https://img.shields.io/npm/dy/@ensdomains/headless-web3-provider)](https://www.npmjs.com/@ensdomains/headless-web3-provider)
 
 > headless-web3-provider fork by ENS. It uses [viem](https://viem.sh), has fewer dependencies and supports EIP-6963 (ported from [this PR](https://github.com/cawabunga/headless-web3-provider/pull/21)).
 
@@ -51,7 +51,7 @@ Setup (add a fixture):
 ```js
 // tests/fixtures.js
 import { test as base } from '@playwright/test'
-import { injectHeadlessWeb3Provider } from '@ensdomains/headless-web3-provider/playwright'
+import { injectHeadlessWeb3Provider } from '@ensdomains/headless-web3-provider'
 import { anvil } from 'viem/chains'
 
 export const test = base.extend({

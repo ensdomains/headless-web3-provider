@@ -1,5 +1,10 @@
 import type { Page } from '@playwright/test'
-import { type Address, privateKeyToAccount } from 'viem/accounts'
+import {
+	type Address,
+	generatePrivateKey,
+	privateKeyToAccount,
+	privateKeyToAddress,
+} from 'viem/accounts'
 
 import { expect, test } from '../fixtures.js'
 import 'viem/window'
@@ -259,3 +264,38 @@ for (const {
 		)
 	})
 }
+
+test('update accounts', async ({ page, wallet, accounts }) => {
+	// Request connecting the wallet
+	await page.getByRole('button', { name: 'Connect', exact: true }).click()
+
+	expect(
+		wallet.getPendingRequestCount(Web3RequestKind.RequestAccounts),
+	).toEqual(1)
+
+	// You can either authorize or reject the request
+	await wallet.authorize(Web3RequestKind.RequestAccounts)
+
+	expect(
+		wallet.getPendingRequestCount(Web3RequestKind.RequestAccounts),
+	).toEqual(0)
+
+	let ethAccounts = await page.evaluate(() =>
+		window.ethereum!.request({
+			method: 'eth_accounts',
+		}),
+	)
+
+	expect(ethAccounts).toEqual(accounts)
+
+	const pk = generatePrivateKey()
+	await wallet.changeAccounts([pk])
+
+	ethAccounts = await page.evaluate(() =>
+		window.ethereum!.request({
+			method: 'eth_accounts',
+		}),
+	)
+
+	expect(ethAccounts).toEqual([privateKeyToAddress(pk)])
+})
