@@ -1,78 +1,42 @@
 import {
-  createAsyncMiddleware,
-  type JsonRpcMiddleware,
+	type JsonRpcMiddleware,
+	createAsyncMiddleware,
 } from '@metamask/json-rpc-engine'
 import type { Json, JsonRpcParams } from '@metamask/utils'
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util'
-import { ethers } from 'ethers'
-import assert from 'node:assert/strict'
-import { toUtf8String } from 'ethers/lib/utils'
+import { hexToString } from 'viem'
+import type { LocalAccount } from 'viem/accounts'
 
-export function makeSignMessageMiddleware(walletThunk: () => ethers.Wallet) {
-  const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
-    createAsyncMiddleware(async (req, res, next) => {
-      switch (req.method) {
-        case 'personal_sign': {
-          const wallet = walletThunk()
-          const address = await wallet.getAddress()
-          // @ts-expect-error todo: parse params
-          assert.equal(address, ethers.utils.getAddress(req.params[1]))
-          // @ts-expect-error todo: parse params
-          const message = toUtf8String(req.params[0])
+export function createSignMessageMiddleware({
+	account,
+}: { account: LocalAccount }) {
+	const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
+		createAsyncMiddleware(async (req, res, next) => {
+			switch (req.method) {
+				case 'personal_sign': {
+					// @ts-expect-error
+					const message = hexToString(req.params[0])
 
-          const signature = await wallet.signMessage(message)
+					const signature = await account.signMessage({ message })
 
-          res.result = signature
-          break
-        }
+					res.result = signature
+					break
+				}
 
-        case 'eth_signTypedData':
-        case 'eth_signTypedData_v1': {
-          const wallet = walletThunk()
-          const address = await wallet.getAddress()
-          // @ts-expect-error todo: parse params
-          assert.equal(address, ethers.utils.getAddress(req.params[1]))
+				case 'eth_signTypedData_v3':
+				case 'eth_signTypedData_v4': {
+					// @ts-expect-error todo: parse params
+					const msgParams = JSON.parse(req.params[1])
 
-          // @ts-expect-error todo: parse params
-          const msgParams = req.params[0]
+					const signature = await account.signTypedData(msgParams)
 
-          const signature = signTypedData({
-            privateKey: Buffer.from(wallet.privateKey.slice(2), 'hex'),
-            data: msgParams,
-            version: SignTypedDataVersion.V1,
-          })
+					res.result = signature
+					break
+				}
 
-          res.result = signature
-          break
-        }
+				default:
+					void next()
+			}
+		})
 
-        case 'eth_signTypedData_v3':
-        case 'eth_signTypedData_v4': {
-          const wallet = walletThunk()
-          const address = await wallet.getAddress()
-          // @ts-expect-error todo: parse params
-          assert.equal(address, ethers.utils.getAddress(req.params[0]))
-
-          // @ts-expect-error todo: parse params
-          const msgParams = JSON.parse(req.params[1])
-
-          const signature = signTypedData({
-            privateKey: Buffer.from(wallet.privateKey.slice(2), 'hex'),
-            data: msgParams,
-            version:
-              req.method === 'eth_signTypedData_v4'
-                ? SignTypedDataVersion.V4
-                : SignTypedDataVersion.V3,
-          })
-
-          res.result = signature
-          break
-        }
-
-        default:
-          void next()
-      }
-    })
-
-  return middleware
+	return middleware
 }

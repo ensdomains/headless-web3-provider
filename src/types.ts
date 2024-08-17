@@ -1,21 +1,29 @@
-import type { JsonRpcRequest } from '@metamask/utils'
+import type {
+	EIP1193Parameters,
+	EIP1193Provider,
+	EIP1474Methods,
+	Transport,
+} from 'viem'
 
-export interface IWeb3Provider {
-  isMetaMask?: boolean
+import type { Web3ProviderBackendType } from './backend.js'
 
-  request(args: Pick<JsonRpcRequest, 'method' | 'params'>): Promise<any>
-
-  emit(eventName: string, ...args: any[]): void
-  on(eventName: string, listener: (eventName: string) => void): void
-}
+export type JsonRpcRequest = EIP1193Parameters<EIP1474Methods>
 
 export interface PendingRequest {
-  requestInfo: JsonRpcRequest
-  reject: (err: { message?: string; code?: number }) => void
-  authorize: () => Promise<void>
+	requestInfo: JsonRpcRequest
+	reject: (err: { message?: string; code?: number }) => void
+	authorize: () => Promise<void>
 }
 
-export interface ChainConnection {
-  chainId: number
-  rpcUrl: string
-}
+export type AnyFunction = (...args: any[]) => any
+export type EvaluateFn = <T extends keyof Web3ProviderBackendType>(
+	method: T,
+	...args: Web3ProviderBackendType[T] extends AnyFunction
+		? Parameters<Web3ProviderBackendType[T]>
+		: []
+) => Promise<void>
+
+export type ChainTransport = ReturnType<Transport>
+
+export type WindowEthereum = Window &
+	typeof globalThis & { ethereum: EIP1193Provider }
