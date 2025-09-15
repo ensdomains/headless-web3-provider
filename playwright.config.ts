@@ -52,9 +52,12 @@ const config: PlaywrightTestConfig = {
 	],
 	webServer: [
 		{
-			command: `pnpm tsx './tests/services/anvil/anvilPoolServer.ts'`,
+			command: `FOUNDRY_DISABLE_NIGHTLY_WARNING=1 pnpm tsx './tests/services/anvil/anvilPoolServer.ts'`,
 			port: 3077,
 			reuseExistingServer: false,
+			env: {
+				FOUNDRY_DISABLE_NIGHTLY_WARNING: '1',
+			},
 		},
 	],
 }

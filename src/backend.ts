@@ -1,6 +1,7 @@
 import type { JsonRpcEngine } from '@metamask/json-rpc-engine'
 import {
 	http,
+	type Address,
 	type Chain,
 	type EIP1193Parameters,
 	type EIP1193Provider,
@@ -15,6 +16,8 @@ import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
+import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
+import { formatTransactionForJsonRpc, getAddressBalance, prepareSendEthTransaction, validateAddress } from './wallet/ethUtils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
 
 export interface Web3ProviderConfig {
@@ -239,5 +242,56 @@ export class Web3ProviderBackend
 			this.#pendingRequests.push(pendingRequest)
 			return this.#pendingRequests
 		})
+	}
+
+	/**
+	 * Sends ETH to the specified address
+	 * @param options Transaction options including amount and destination
+	 * @returns Transaction hash
+	 */
+	async sendEth(options: SendEthOptions): Promise<`0x${string}`> {
+		if (!options.to) {
+			throw new Error('Destination address is required')
+		}
+
+		if (!options.amount || Number.parseFloat(options.amount) <= 0) {
+			throw new Error('Amount must be greater than 0')
+		}
+
+		// Prepare transaction parameters using the first account
+		const txParams = prepareSendEthTransaction(options, this.#accounts[0])
+		
+		// Convert to JSON-RPC format
+		const jsonRpcTx = formatTransactionForJsonRpc(txParams)
+
+		// Send the transaction using the existing JSON-RPC infrastructure
+		const txHash = await this.request({
+			method: 'eth_sendTransaction',
+			params: [jsonRpcTx],
+		}) as `0x${string}`
+
+		return txHash
+	}
+
+	/**
+	 * Gets the balance of an address in ETH or Wei
+	 * @param options Balance options including address and unit
+	 * @returns Balance as a string (in ETH or Wei depending on unit option)
+	 */
+	async getBalance(options: GetBalanceOptions = {}): Promise<string> {
+		// Use specified address or default to first account
+		const address = options.address 
+			? validateAddress(options.address)
+			: this.#accounts[0].address as Address
+
+		// Use specified unit or default to ETH
+		const unit = options.unit || 'eth'
+
+		return getAddressBalance(
+			address,
+			() => this.getChainTransport(),
+			() => this.getChain(),
+			unit
+		)
 	}
 }

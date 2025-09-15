@@ -32,6 +32,8 @@
 	"homepage": "https://github.com/ensdomains/headless-web3-provider#readme",
 	"scripts": {
 		"test": "playwright test",
+		"test:unit": "find src -name '*.test.ts' -exec tsx {} \\;",
+		"test:e2e": "playwright test",
 		"build": "tsup",
 		"check": "biome check",
 		"fmt": "biome format",

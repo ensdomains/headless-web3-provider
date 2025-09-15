@@ -16,6 +16,8 @@ pnpm i -D @ensdomains/headless-web3-provider viem
 
 The `headless-web3-provider` library emulates a Web3 wallet similar to Metamask and provides programmatic control over various operations, such as switching networks, connecting a wallet, and sending transactions, making it useful for end-to-end testing of Ethereum-based applications. It allows to programmatically accept or decline operations, making it handy for test automation.
 
+The library also provides convenient wallet methods like `sendEth()` and `getBalance()` for easy ETH transactions and balance management during testing.
+
 #### Supported methods
 
 | Method                     | Confirmable |
@@ -93,4 +95,83 @@ test('connect the wallet', async ({ page, injectWeb3Provider }) => {
     .expect(page.locator('text=0x8b3a08b22d25c60e4b2bfd984e331568eca4c299'))
     .toBeVisible()
 })
+```
+
+### Wallet Methods
+
+The wallet instance provides convenient methods for common operations:
+
+#### `sendEth(options)`
+
+Sends ETH to a specified address. Requires authorization unless the `eth_sendTransaction` method is pre-permitted.
+
+```js
+// Send 0.1 ETH to an address
+const txHash = await wallet.sendEth({
+  amount: '0.1', // Amount in ETH
+  to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4'
+})
+
+// Authorize the transaction
+await wallet.authorize(Web3RequestKind.SendTransaction)
+
+// Transaction hash is returned after authorization
+console.log('Transaction hash:', txHash)
+```
+
+With custom gas parameters:
+
+```js
+const txHash = await wallet.sendEth({
+  amount: '0.05',
+  to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
+  gas: 25000n,
+  gasPrice: '10', // 10 gwei
+  nonce: 42, // Custom nonce
+  data: '0x68656c6c6f' // Custom transaction data
+})
+
+await wallet.authorize(Web3RequestKind.SendTransaction)
+```
+
+#### `getBalance(options)`
+
+Retrieve the ETH balance of an address.
+
+```js
+// Get balance of the first wallet account in ETH
+const balance = await wallet.getBalance()
+console.log('Balance:', balance, 'ETH')
+
+// Get balance in Wei
+const balanceWei = await wallet.getBalance({ unit: 'wei' })
+console.log('Balance:', balanceWei, 'Wei')
+
+// Get balance of a specific address
+const otherBalance = await wallet.getBalance({
+  address: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
+  unit: 'eth'
+})
+```
+
+#### Utility Functions
+
+The library exports utility functions for working with ETH amounts and addresses:
+
+```js
+import { 
+  ethToWei, 
+  weiToEth, 
+  gweiToWei, 
+  weiToGwei, 
+  validateAddress 
+} from '@ensdomains/headless-web3-provider'
+
+// Convert between units
+const weiAmount = ethToWei('1.5') // 1500000000000000000n
+const ethAmount = weiToEth(1500000000000000000n) // '1.5'
+const gweiAmount = weiToGwei(20000000000n) // '20'
+
+// Validate addresses
+const validAddress = validateAddress('0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4')
 ```
