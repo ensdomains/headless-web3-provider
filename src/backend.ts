@@ -235,9 +235,10 @@ export class Web3ProviderBackend
 			!this.#publicClient ||
 			this.#publicClient.chain?.id !== this.#activeChain.id
 		) {
+			const chain = this.#activeChain
 			this.#publicClient = createPublicClient({
-				chain: this.#activeChain,
-				transport: this.getChainTransport(),
+				chain,
+				transport: http(chain.rpcUrls.default.http[0]),
 			})
 		}
 		return this.#publicClient
