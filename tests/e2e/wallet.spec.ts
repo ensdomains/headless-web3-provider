@@ -45,7 +45,7 @@ test('send ETH transaction with authorization', async ({ wallet }) => {
 	const initialSenderBalance = await wallet.getBalance()
 
 	// Initiate ETH transfer - this should create a pending request
-	const sendPromise = wallet.sendEth({
+	const sendPromise = wallet.sendTransaction({
 		amount: '0.1',
 		to: recipient.address as Address,
 	})
@@ -94,7 +94,7 @@ test('reject ETH transaction', async ({ wallet }) => {
 	const recipient = privateKeyToAccount(recipientPrivateKey)
 
 	// Initiate ETH transfer
-	const sendPromise = wallet.sendEth({
+	const sendPromise = wallet.sendTransaction({
 		amount: '0.05',
 		to: recipient.address as Address,
 	})
@@ -121,7 +121,7 @@ test('send ETH with custom gas parameters', async ({ wallet }) => {
 	const recipient = privateKeyToAccount(recipientPrivateKey)
 
 	// Initiate ETH transfer with custom gas parameters
-	const sendPromise = wallet.sendEth({
+	const sendPromise = wallet.sendTransaction({
 		amount: '0.01',
 		to: recipient.address as Address,
 		gas: 25000n,
@@ -151,7 +151,7 @@ test('send ETH with custom nonce', async ({ wallet, accounts }) => {
 	})) as string
 
 	// Initiate ETH transfer with explicit nonce
-	const sendPromise = wallet.sendEth({
+	const sendPromise = wallet.sendTransaction({
 		amount: '0.01',
 		to: recipient.address as Address,
 		nonce: Number.parseInt(nextNonce, 16),
@@ -174,7 +174,7 @@ test('send ETH with transaction data', async ({ wallet }) => {
 	const recipient = privateKeyToAccount(recipientPrivateKey)
 
 	// Initiate ETH transfer with custom data
-	const sendPromise = wallet.sendEth({
+	const sendPromise = wallet.sendTransaction({
 		amount: '0.01',
 		to: recipient.address as Address,
 		data: '0x68656c6c6f', // "hello" in hex
@@ -191,10 +191,10 @@ test('send ETH with transaction data', async ({ wallet }) => {
 	expect(txHash).toMatch(/^0x[0-9a-fA-F]{64}$/)
 })
 
-test('should validate sendEth parameters', async ({ wallet }) => {
+test('should validate sendTransaction parameters', async ({ wallet }) => {
 	// Test invalid destination address
 	await expect(
-		wallet.sendEth({
+		wallet.sendTransaction({
 			amount: '0.1',
 			to: 'invalid-address' as Address,
 		}),
@@ -202,7 +202,7 @@ test('should validate sendEth parameters', async ({ wallet }) => {
 
 	// Test missing destination address
 	await expect(
-		wallet.sendEth({
+		wallet.sendTransaction({
 			amount: '0.1',
 			to: '' as Address,
 		}),
@@ -210,7 +210,7 @@ test('should validate sendEth parameters', async ({ wallet }) => {
 
 	// Test zero amount
 	await expect(
-		wallet.sendEth({
+		wallet.sendTransaction({
 			amount: '0',
 			to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4' as Address,
 		}),
@@ -218,7 +218,7 @@ test('should validate sendEth parameters', async ({ wallet }) => {
 
 	// Test negative amount
 	await expect(
-		wallet.sendEth({
+		wallet.sendTransaction({
 			amount: '-0.1',
 			to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4' as Address,
 		}),
@@ -226,7 +226,7 @@ test('should validate sendEth parameters', async ({ wallet }) => {
 
 	// Test invalid amount
 	await expect(
-		wallet.sendEth({
+		wallet.sendTransaction({
 			amount: 'not-a-number',
 			to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4' as Address,
 		}),

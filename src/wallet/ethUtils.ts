@@ -13,10 +13,10 @@ import {
 } from 'viem'
 import type { ChainTransport } from '../types.js'
 
-export interface SendEthOptions {
-	/** Amount to send in ETH (e.g., "0.1" for 0.1 ETH) */
+export interface SendTransactionOptions {
+	/** Amount to send in ETH (e.g., "0.1" for 0.1 ETH). Use "0" for contract calls without ETH transfer */
 	amount: string
-	/** Destination address */
+	/** Destination address (can be contract address for contract calls) */
 	to: Address
 	/** Optional gas limit (defaults to estimated) */
 	gas?: bigint
@@ -24,7 +24,7 @@ export interface SendEthOptions {
 	gasPrice?: string
 	/** Optional nonce (defaults to next available) */
 	nonce?: number
-	/** Optional transaction data */
+	/** Optional transaction data for contract calls (e.g., encoded function calls) */
 	data?: Hex
 }
 
@@ -109,10 +109,10 @@ export async function getAddressBalance(
 }
 
 /**
- * Prepares transaction parameters for sending ETH
+ * Prepares transaction parameters for sending any transaction (ETH transfers, contract calls, etc.)
  */
-export function prepareSendEthTransaction(
-	options: SendEthOptions,
+export function prepareTransaction(
+	options: SendTransactionOptions,
 	fromAccount: LocalAccount,
 ): TransactionRequest {
 	const { amount, to, gas, gasPrice, nonce, data } = options

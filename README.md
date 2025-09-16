@@ -16,7 +16,7 @@ pnpm i -D @ensdomains/headless-web3-provider viem
 
 The `headless-web3-provider` library emulates a Web3 wallet similar to Metamask and provides programmatic control over various operations, such as switching networks, connecting a wallet, and sending transactions, making it useful for end-to-end testing of Ethereum-based applications. It allows to programmatically accept or decline operations, making it handy for test automation.
 
-The library also provides convenient wallet methods like `sendEth()` and `getBalance()` for easy ETH transactions and balance management during testing.
+The library also provides convenient wallet methods like `sendTransaction()` and `getBalance()` for easy transactions (ETH transfers, contract calls, token transfers) and balance management during testing.
 
 #### Supported methods
 
@@ -101,13 +101,13 @@ test('connect the wallet', async ({ page, injectWeb3Provider }) => {
 
 The wallet instance provides convenient methods for common operations:
 
-#### `sendEth(options)`
+#### `sendTransaction(options)`
 
-Sends ETH to a specified address. Requires authorization unless the `eth_sendTransaction` method is pre-permitted.
+Sends any transaction (ETH transfers, contract calls, token transfers, etc.). Requires authorization unless the `eth_sendTransaction` method is pre-permitted.
 
 ```js
 // Send 0.1 ETH to an address
-const txHash = await wallet.sendEth({
+const txHash = await wallet.sendTransaction({
   amount: '0.1', // Amount in ETH
   to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4'
 })
@@ -122,13 +122,26 @@ console.log('Transaction hash:', txHash)
 With custom gas parameters:
 
 ```js
-const txHash = await wallet.sendEth({
+const txHash = await wallet.sendTransaction({
   amount: '0.05',
   to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
   gas: 25000n,
   gasPrice: '10', // 10 gwei
   nonce: 42, // Custom nonce
-  data: '0x68656c6c6f' // Custom transaction data
+  data: '0x68656c6c6f' // Custom transaction data (for contract calls)
+})
+
+await wallet.authorize(Web3RequestKind.SendTransaction)
+```
+
+Contract calls (no ETH transfer):
+
+```js
+// Contract function call (e.g., ERC-20 token transfer)
+const txHash = await wallet.sendTransaction({
+  amount: '0', // No ETH sent
+  to: '0xTokenContractAddress',
+  data: '0xa9059cbb000000000000000000000000742d35cc6634c0532925a3b8d406e3d2c9a07e5b50000000000000000000000000000000000000000000000000de0b6b3a7640000' // encoded transfer(address,uint256)
 })
 
 await wallet.authorize(Web3RequestKind.SendTransaction)

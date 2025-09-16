@@ -5,8 +5,8 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
 	ethToWei,
 	gweiToWei,
-	prepareSendEthTransaction,
-	type SendEthOptions,
+	prepareTransaction,
+	type SendTransactionOptions,
 	validateAddress,
 	weiToEth,
 	weiToGwei,
@@ -95,12 +95,12 @@ describe('ETH Utility Functions', () => {
 		test('should prepare basic ETH transaction correctly', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
-			const options: SendEthOptions = {
+			const options: SendTransactionOptions = {
 				amount: '0.1',
 				to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
 			}
 
-			const tx = prepareSendEthTransaction(options, account)
+			const tx = prepareTransaction(options, account)
 
 			assert.strictEqual(tx.from, account.address)
 			assert.strictEqual(tx.to, options.to)
@@ -110,7 +110,7 @@ describe('ETH Utility Functions', () => {
 		test('should include optional parameters in transaction', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
-			const options: SendEthOptions = {
+			const options: SendTransactionOptions = {
 				amount: '0.1',
 				to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
 				gas: 21000n,
@@ -119,7 +119,7 @@ describe('ETH Utility Functions', () => {
 				data: '0x1234',
 			}
 
-			const tx = prepareSendEthTransaction(options, account)
+			const tx = prepareTransaction(options, account)
 
 			assert.strictEqual(tx.from, account.address)
 			assert.strictEqual(tx.to, options.to)
@@ -133,13 +133,13 @@ describe('ETH Utility Functions', () => {
 		test('should validate destination address in transaction preparation', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
-			const options: SendEthOptions = {
+			const options: SendTransactionOptions = {
 				amount: '0.1',
 				to: 'invalid-address' as any,
 			}
 
 			assert.throws(
-				() => prepareSendEthTransaction(options, account),
+				() => prepareTransaction(options, account),
 				/Invalid Ethereum address/,
 			)
 		})

@@ -16,10 +16,13 @@ import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
-import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
+import type {
+	GetBalanceOptions,
+	SendTransactionOptions,
+} from './wallet/ethUtils.js'
 import {
 	getAddressBalance,
-	prepareSendEthTransaction,
+	prepareTransaction,
 	validateAddress,
 } from './wallet/ethUtils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
@@ -251,11 +254,22 @@ export class Web3ProviderBackend
 	}
 
 	/**
-	 * Sends ETH to the specified address
-	 * @param options Transaction options including amount and destination
+	 * Sends a transaction (ETH transfer, contract call, or any transaction with data)
+	 * @param options Transaction options including amount, destination, and optional data
 	 * @returns Transaction hash
+	 * @example
+	 * // Send ETH
+	 * await wallet.sendTransaction({ to: '0x...', amount: '0.1' })
+	 *
+	 * // Contract call with no ETH
+	 * await wallet.sendTransaction({ to: '0x...', amount: '0', data: '0x...' })
+	 *
+	 * // Token transfer (ERC-20)
+	 * await wallet.sendTransaction({ to: '0xTokenAddress', amount: '0', data: encodedTransferCall })
 	 */
-	async sendEth(options: SendEthOptions): Promise<`0x${string}`> {
+	async sendTransaction(
+		options: SendTransactionOptions,
+	): Promise<`0x${string}`> {
 		if (!options.to) {
 			throw new Error('Destination address is required')
 		}
@@ -265,7 +279,7 @@ export class Web3ProviderBackend
 		}
 
 		// Prepare transaction parameters using the first account
-		const txParams = prepareSendEthTransaction(options, this.#accounts[0])
+		const txParams = prepareTransaction(options, this.#accounts[0])
 
 		// Convert to JSON-RPC format
 		const jsonRpcTx = formatTransactionRequest(txParams)
