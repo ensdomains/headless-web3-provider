@@ -56,7 +56,9 @@ export class Web3ProviderBackend
 		this.#activeChain = chains[0]
 		this.#chains = chains
 
-		privateKeys.forEach((pk) => this.#accounts.push(privateKeyToAccount(pk)))
+		privateKeys.forEach((pk) => {
+			this.#accounts.push(privateKeyToAccount(pk))
+		})
 
 		this.#wps = new WalletPermissionSystem(config.permitted)
 		this.#engine = (accounts) =>
