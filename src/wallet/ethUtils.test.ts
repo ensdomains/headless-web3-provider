@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import { formatTransactionRequest } from 'viem'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
@@ -10,22 +11,6 @@ import {
 	weiToEth,
 	weiToGwei,
 } from './ethUtils.js'
-
-function describe(name: string, fn: () => void) {
-	console.log(`\n${name}`)
-	fn()
-}
-
-function test(name: string, fn: () => void) {
-	try {
-		fn()
-		console.log(`  ✓ ${name}`)
-	} catch (error) {
-		console.log(`  ✗ ${name}`)
-		console.error(`    ${error instanceof Error ? error.message : error}`)
-		process.exitCode = 1
-	}
-}
 
 describe('ETH Utility Functions', () => {
 	describe('Address validation', () => {
