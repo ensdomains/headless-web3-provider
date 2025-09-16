@@ -2,9 +2,7 @@ import { test as base } from '@playwright/test'
 import type { Address, Hex } from 'viem'
 import { privateKeyToAddress } from 'viem/accounts'
 import { anvil } from 'viem/chains'
-
-import type { Web3ProviderConfig } from '../src/backend.js'
-import type { Web3ProviderBackend } from '../src/backend.js'
+import type { Web3ProviderBackend, Web3ProviderConfig } from '../src/backend.js'
 import { injectHeadlessWeb3Provider } from '../src/playwright.js'
 import { getAnvilInstance } from './services/anvil/anvilPoolClient.js'
 
@@ -28,7 +26,7 @@ export const test = base.extend<{
 		await use(signers.map((k) => privateKeyToAddress(k)))
 	},
 
-	// biome-ignore lint/correctness/noEmptyPattern: <explanation>
+	// biome-ignore lint/correctness/noEmptyPattern: playwright fixture destructuring
 	anvilRpcUrl: async ({}, use, { workerIndex }) => {
 		const anvilInstance = getAnvilInstance({ workerIndex })
 		await use(anvilInstance.rpcUrl)
@@ -53,7 +51,7 @@ export const test = base.extend<{
 
 			// In order to make https://metamask.github.io/test-dapp/ work flag should be set
 			// @ts-expect-error
-			// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+			// biome-ignore lint/suspicious/noAssignInExpressions: setting metamask flag
 			await page.addInitScript(() => (window.ethereum!.isMetaMask = true))
 
 			await page.goto('https://metamask.github.io/test-dapp/')

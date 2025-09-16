@@ -1,20 +1,32 @@
 import type { JsonRpcEngine } from '@metamask/json-rpc-engine'
+import type { Json } from '@metamask/utils'
 import {
-	http,
+	type Address,
 	type Chain,
+	createPublicClient,
 	type EIP1193Parameters,
 	type EIP1193Provider,
+	formatTransactionRequest,
 	type Hex,
+	http,
 	type LocalAccount,
+	type PublicClient,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-
-import type { Json } from '@metamask/utils'
 import { EventEmitter } from './EventEmitter.js'
 import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
+import type {
+	GetBalanceOptions,
+	SendTransactionOptions,
+} from './wallet/ethUtils.js'
+import {
+	prepareTransaction,
+	validateAddress,
+	weiToEth,
+} from './wallet/ethUtils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
 
 export interface Web3ProviderConfig {
@@ -42,13 +54,16 @@ export class Web3ProviderBackend
 		notify: () => Promise<void>
 	}[] = []
 	#engine: (accounts: LocalAccount[]) => JsonRpcEngine
+	#publicClient?: PublicClient
 
 	constructor({ privateKeys, chains, ...config }: Web3ProviderConfig) {
 		super()
 		this.#activeChain = chains[0]
 		this.#chains = chains
 
-		privateKeys.forEach((pk) => this.#accounts.push(privateKeyToAccount(pk)))
+		privateKeys.forEach((pk) => {
+			this.#accounts.push(privateKeyToAccount(pk))
+		})
 
 		this.#wps = new WalletPermissionSystem(config.permitted)
 		this.#engine = (accounts) =>
@@ -214,6 +229,21 @@ export class Web3ProviderBackend
 		return transport
 	}
 
+	private getPublicClient(): PublicClient {
+		// Create client only once per chain, reuse if same chain
+		if (
+			!this.#publicClient ||
+			this.#publicClient.chain?.id !== this.#activeChain.id
+		) {
+			const chain = this.#activeChain
+			this.#publicClient = createPublicClient({
+				chain,
+				transport: http(chain.rpcUrls.default.http[0]),
+			})
+		}
+		return this.#publicClient
+	}
+
 	async waitAuthorization<T>(req: JsonRpcRequest, task: () => Promise<T>) {
 		if (this.#wps.isPermitted(req.method, '')) {
 			return task()
@@ -239,5 +269,66 @@ export class Web3ProviderBackend
 			this.#pendingRequests.push(pendingRequest)
 			return this.#pendingRequests
 		})
+	}
+
+	/**
+	 * Sends a transaction (ETH transfer, contract call, or any transaction with data)
+	 * @param options Transaction options including amount, destination, and optional data
+	 * @returns Transaction hash
+	 * @example
+	 * // Send ETH
+	 * await wallet.sendTransaction({ to: '0x...', amount: '0.1' })
+	 *
+	 * // Contract call with no ETH
+	 * await wallet.sendTransaction({ to: '0x...', amount: '0', data: '0x...' })
+	 *
+	 * // Token transfer (ERC-20)
+	 * await wallet.sendTransaction({ to: '0xTokenAddress', amount: '0', data: encodedTransferCall })
+	 */
+	async sendTransaction(
+		options: SendTransactionOptions,
+	): Promise<`0x${string}`> {
+		if (!options.to) {
+			throw new Error('Destination address is required')
+		}
+
+		if (!options.amount || Number.parseFloat(options.amount) <= 0) {
+			throw new Error('Amount must be greater than 0')
+		}
+
+		// Prepare transaction parameters using the first account
+		const txParams = prepareTransaction(options, this.#accounts[0])
+
+		// Convert to JSON-RPC format
+		const jsonRpcTx = formatTransactionRequest(txParams)
+
+		// Send the transaction using the existing JSON-RPC infrastructure
+		const txHash = (await this.request({
+			method: 'eth_sendTransaction',
+			params: [jsonRpcTx],
+		})) as `0x${string}`
+
+		return txHash
+	}
+
+	/**
+	 * Gets the balance of an address in ETH or Wei
+	 * @param options Balance options including address and unit
+	 * @returns Balance as a string (in ETH or Wei depending on unit option)
+	 */
+	async getBalance(options: GetBalanceOptions = {}): Promise<string> {
+		// Use specified address or default to first account
+		const address = options.address
+			? validateAddress(options.address)
+			: (this.#accounts[0].address as Address)
+
+		// Use specified unit or default to ETH
+		const unit = options.unit || 'eth'
+
+		// Use the cached public client
+		const publicClient = this.getPublicClient()
+		const balance = await publicClient.getBalance({ address })
+
+		return unit === 'eth' ? weiToEth(balance) : balance.toString()
 	}
 }

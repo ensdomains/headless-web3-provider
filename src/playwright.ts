@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Page } from '@playwright/test'
-import { EventEmitter } from './EventEmitter.js'
 import type { Web3ProviderConfig } from './backend.js'
+import { EventEmitter } from './EventEmitter.js'
 import { createHeadlessWeb3Provider } from './factory.js'
 import type { EvaluateFn, WindowEthereum } from './types.js'
 
@@ -50,8 +50,6 @@ export async function injectHeadlessWeb3Provider({
 			const proxyableMethods = ['request']
 
 			// @ts-expect-error
-			// biome-ignore lint/suspicious/noImportAssign: EventEmitter does not exist in browser context
-			// biome-ignore lint/style/noVar: <explanation>
 			var EventEmitter = window.EventEmitter
 
 			Object.defineProperty(window, 'ethereum', {

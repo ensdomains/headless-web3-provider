@@ -1,6 +1,6 @@
 import {
-	type JsonRpcMiddleware,
 	createAsyncMiddleware,
+	type JsonRpcMiddleware,
 } from '@metamask/json-rpc-engine'
 import type { Json, JsonRpcParams } from '@metamask/utils'
 import { hexToString } from 'viem'
@@ -8,7 +8,9 @@ import type { LocalAccount } from 'viem/accounts'
 
 export function createSignMessageMiddleware({
 	account,
-}: { account: LocalAccount }) {
+}: {
+	account: LocalAccount
+}) {
 	const middleware: JsonRpcMiddleware<JsonRpcParams, Json> =
 		createAsyncMiddleware(async (req, res, next) => {
 			switch (req.method) {

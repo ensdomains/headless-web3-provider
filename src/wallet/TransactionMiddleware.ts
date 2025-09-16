@@ -1,14 +1,14 @@
 import {
-	type JsonRpcMiddleware,
 	createAsyncMiddleware,
+	type JsonRpcMiddleware,
 } from '@metamask/json-rpc-engine'
 import type { Json, JsonRpcParams } from '@metamask/utils'
 import {
 	type Chain,
-	type LocalAccount,
-	type TransactionRequest,
 	createWalletClient,
 	formatTransaction,
+	type LocalAccount,
+	type TransactionRequest,
 } from 'viem'
 import type { ChainTransport } from '../types.js'
 
