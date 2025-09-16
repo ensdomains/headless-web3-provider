@@ -2,9 +2,7 @@ import { test as base } from '@playwright/test'
 import type { Address, Hex } from 'viem'
 import { privateKeyToAddress } from 'viem/accounts'
 import { anvil } from 'viem/chains'
-
-import type { Web3ProviderConfig } from '../src/backend.js'
-import type { Web3ProviderBackend } from '../src/backend.js'
+import type { Web3ProviderBackend, Web3ProviderConfig } from '../src/backend.js'
 import { injectHeadlessWeb3Provider } from '../src/playwright.js'
 import { getAnvilInstance } from './services/anvil/anvilPoolClient.js'
 

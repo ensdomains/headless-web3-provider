@@ -1,11 +1,11 @@
 import { strict as assert } from 'node:assert'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
-	type SendEthOptions,
 	ethToWei,
 	formatTransactionForJsonRpc,
 	gweiToWei,
 	prepareSendEthTransaction,
+	type SendEthOptions,
 	validateAddress,
 	weiToEth,
 	weiToGwei,

@@ -1,8 +1,4 @@
-export function getAnvilInstance({
-	workerIndex,
-}: {
-	workerIndex: number
-}): {
+export function getAnvilInstance({ workerIndex }: { workerIndex: number }): {
 	rpcUrl: string
 	restart: () => Promise<Response>
 } {

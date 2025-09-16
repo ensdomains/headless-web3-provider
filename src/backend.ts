@@ -1,22 +1,20 @@
 import type { JsonRpcEngine } from '@metamask/json-rpc-engine'
+import type { Json } from '@metamask/utils'
 import {
-	http,
 	type Address,
 	type Chain,
 	type EIP1193Parameters,
 	type EIP1193Provider,
 	type Hex,
+	http,
 	type LocalAccount,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-
-import type { Json } from '@metamask/utils'
 import { EventEmitter } from './EventEmitter.js'
 import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
-import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
 import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
 import {
 	formatTransactionForJsonRpc,
@@ -24,6 +22,7 @@ import {
 	prepareSendEthTransaction,
 	validateAddress,
 } from './wallet/ethUtils.js'
+import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
 
 export interface Web3ProviderConfig {
 	privateKeys: Hex[]
