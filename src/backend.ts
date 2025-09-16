@@ -3,12 +3,14 @@ import type { Json } from '@metamask/utils'
 import {
 	type Address,
 	type Chain,
+	createPublicClient,
 	type EIP1193Parameters,
 	type EIP1193Provider,
 	formatTransactionRequest,
 	type Hex,
 	http,
 	type LocalAccount,
+	type PublicClient,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { EventEmitter } from './EventEmitter.js'
@@ -21,9 +23,9 @@ import type {
 	SendTransactionOptions,
 } from './wallet/ethUtils.js'
 import {
-	getAddressBalance,
 	prepareTransaction,
 	validateAddress,
+	weiToEth,
 } from './wallet/ethUtils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
 
@@ -52,6 +54,7 @@ export class Web3ProviderBackend
 		notify: () => Promise<void>
 	}[] = []
 	#engine: (accounts: LocalAccount[]) => JsonRpcEngine
+	#publicClient?: PublicClient
 
 	constructor({ privateKeys, chains, ...config }: Web3ProviderConfig) {
 		super()
@@ -226,6 +229,20 @@ export class Web3ProviderBackend
 		return transport
 	}
 
+	private getPublicClient(): PublicClient {
+		// Create client only once per chain, reuse if same chain
+		if (
+			!this.#publicClient ||
+			this.#publicClient.chain?.id !== this.#activeChain.id
+		) {
+			this.#publicClient = createPublicClient({
+				chain: this.#activeChain,
+				transport: this.getChainTransport(),
+			})
+		}
+		return this.#publicClient
+	}
+
 	async waitAuthorization<T>(req: JsonRpcRequest, task: () => Promise<T>) {
 		if (this.#wps.isPermitted(req.method, '')) {
 			return task()
@@ -307,11 +324,10 @@ export class Web3ProviderBackend
 		// Use specified unit or default to ETH
 		const unit = options.unit || 'eth'
 
-		return getAddressBalance(
-			address,
-			() => this.getChainTransport(),
-			() => this.getChain(),
-			unit,
-		)
+		// Use the cached public client
+		const publicClient = this.getPublicClient()
+		const balance = await publicClient.getBalance({ address })
+
+		return unit === 'eth' ? weiToEth(balance) : balance.toString()
 	}
 }

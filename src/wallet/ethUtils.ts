@@ -1,7 +1,5 @@
 import {
 	type Address,
-	type Chain,
-	createPublicClient,
 	formatEther,
 	formatUnits,
 	type Hex,
@@ -11,7 +9,6 @@ import {
 	parseUnits,
 	type TransactionRequest,
 } from 'viem'
-import type { ChainTransport } from '../types.js'
 
 export interface SendTransactionOptions {
 	/** Amount to send in ETH (e.g., "0.1" for 0.1 ETH). Use "0" for contract calls without ETH transfer */
@@ -87,25 +84,6 @@ export function gweiToWei(gwei: string): bigint {
  */
 export function weiToGwei(wei: bigint): string {
 	return formatUnits(wei, 9)
-}
-
-/**
- * Gets the balance of an address
- */
-export async function getAddressBalance(
-	address: Address,
-	getChainTransport: () => ChainTransport,
-	getChain: () => Chain,
-	unit: 'eth' | 'wei' = 'eth',
-): Promise<string> {
-	const publicClient = createPublicClient({
-		chain: getChain(),
-		transport: getChainTransport,
-	})
-
-	const balance = await publicClient.getBalance({ address })
-
-	return unit === 'eth' ? weiToEth(balance) : balance.toString()
 }
 
 /**
