@@ -5,6 +5,7 @@ import {
 	type Chain,
 	type EIP1193Parameters,
 	type EIP1193Provider,
+	formatTransactionRequest,
 	type Hex,
 	http,
 	type LocalAccount,
@@ -17,7 +18,6 @@ import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
 import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
 import {
-	formatTransactionForJsonRpc,
 	getAddressBalance,
 	prepareSendEthTransaction,
 	validateAddress,
@@ -268,7 +268,7 @@ export class Web3ProviderBackend
 		const txParams = prepareSendEthTransaction(options, this.#accounts[0])
 
 		// Convert to JSON-RPC format
-		const jsonRpcTx = formatTransactionForJsonRpc(txParams)
+		const jsonRpcTx = formatTransactionRequest(txParams)
 
 		// Send the transaction using the existing JSON-RPC infrastructure
 		const txHash = (await this.request({

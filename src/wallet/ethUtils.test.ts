@@ -1,8 +1,8 @@
 import { strict as assert } from 'node:assert'
+import { formatTransactionRequest } from 'viem'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
 	ethToWei,
-	formatTransactionForJsonRpc,
 	gweiToWei,
 	prepareSendEthTransaction,
 	type SendEthOptions,
@@ -160,8 +160,8 @@ describe('ETH Utility Functions', () => {
 		})
 	})
 
-	describe('JSON-RPC transaction formatting', () => {
-		test('should format transaction for JSON-RPC correctly', () => {
+	describe('JSON-RPC transaction formatting (viem)', () => {
+		test('should format transaction for JSON-RPC correctly using viem', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
 
@@ -175,7 +175,7 @@ describe('ETH Utility Functions', () => {
 				data: '0x1234',
 			}
 
-			const jsonRpcTx = formatTransactionForJsonRpc(tx)
+			const jsonRpcTx = formatTransactionRequest(tx)
 
 			assert.strictEqual(jsonRpcTx.from, account.address)
 			assert.strictEqual(jsonRpcTx.to, tx.to)
@@ -186,7 +186,7 @@ describe('ETH Utility Functions', () => {
 			assert.strictEqual(jsonRpcTx.data, tx.data)
 		})
 
-		test('should handle undefined optional fields', () => {
+		test('should handle undefined optional fields using viem', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
 
@@ -196,7 +196,7 @@ describe('ETH Utility Functions', () => {
 				value: ethToWei('0.1'),
 			}
 
-			const jsonRpcTx = formatTransactionForJsonRpc(tx)
+			const jsonRpcTx = formatTransactionRequest(tx)
 
 			assert.strictEqual(jsonRpcTx.from, account.address)
 			assert.strictEqual(jsonRpcTx.to, tx.to)
@@ -204,7 +204,7 @@ describe('ETH Utility Functions', () => {
 			assert.strictEqual(jsonRpcTx.gas, undefined)
 			assert.strictEqual(jsonRpcTx.gasPrice, undefined)
 			assert.strictEqual(jsonRpcTx.nonce, undefined)
-			assert.strictEqual(jsonRpcTx.data, '0x')
+			assert.strictEqual(jsonRpcTx.data, undefined)
 		})
 	})
 })

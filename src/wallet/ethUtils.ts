@@ -149,18 +149,3 @@ export function prepareSendEthTransaction(
 
 	return txParams
 }
-
-/**
- * Converts a Viem transaction request to JSON-RPC format
- */
-export function formatTransactionForJsonRpc(tx: TransactionRequest) {
-	return {
-		from: tx.from,
-		to: tx.to,
-		value: tx.value ? `0x${tx.value.toString(16)}` : undefined,
-		gas: tx.gas ? `0x${tx.gas.toString(16)}` : undefined,
-		gasPrice: tx.gasPrice ? `0x${tx.gasPrice.toString(16)}` : undefined,
-		nonce: tx.nonce ? `0x${tx.nonce.toString(16)}` : undefined,
-		data: tx.data || '0x',
-	}
-}
