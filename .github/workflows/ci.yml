@@ -25,7 +25,7 @@ jobs:
         with:
           version: latest
       - name: Run Biome
-        run: biome lint
+        run: biome ci .
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium
       - name: Run tests
