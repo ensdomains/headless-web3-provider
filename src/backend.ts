@@ -16,9 +16,14 @@ import { createRpcEngine } from './engine.js'
 import { ChainDisconnected, Deny, type ErrorWithCode } from './errors.js'
 import type { ChainTransport, JsonRpcRequest, PendingRequest } from './types.js'
 import type { Web3RequestKind } from './utils.js'
-import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
-import { formatTransactionForJsonRpc, getAddressBalance, prepareSendEthTransaction, validateAddress } from './wallet/ethUtils.js'
 import { WalletPermissionSystem } from './wallet/WalletPermissionSystem.js'
+import type { GetBalanceOptions, SendEthOptions } from './wallet/ethUtils.js'
+import {
+	formatTransactionForJsonRpc,
+	getAddressBalance,
+	prepareSendEthTransaction,
+	validateAddress,
+} from './wallet/ethUtils.js'
 
 export interface Web3ProviderConfig {
 	privateKeys: Hex[]
@@ -260,15 +265,15 @@ export class Web3ProviderBackend
 
 		// Prepare transaction parameters using the first account
 		const txParams = prepareSendEthTransaction(options, this.#accounts[0])
-		
+
 		// Convert to JSON-RPC format
 		const jsonRpcTx = formatTransactionForJsonRpc(txParams)
 
 		// Send the transaction using the existing JSON-RPC infrastructure
-		const txHash = await this.request({
+		const txHash = (await this.request({
 			method: 'eth_sendTransaction',
 			params: [jsonRpcTx],
-		}) as `0x${string}`
+		})) as `0x${string}`
 
 		return txHash
 	}
@@ -280,9 +285,9 @@ export class Web3ProviderBackend
 	 */
 	async getBalance(options: GetBalanceOptions = {}): Promise<string> {
 		// Use specified address or default to first account
-		const address = options.address 
+		const address = options.address
 			? validateAddress(options.address)
-			: this.#accounts[0].address as Address
+			: (this.#accounts[0].address as Address)
 
 		// Use specified unit or default to ETH
 		const unit = options.unit || 'eth'
@@ -291,7 +296,7 @@ export class Web3ProviderBackend
 			address,
 			() => this.getChainTransport(),
 			() => this.getChain(),
-			unit
+			unit,
 		)
 	}
 }

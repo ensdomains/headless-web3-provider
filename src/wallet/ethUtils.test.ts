@@ -153,7 +153,10 @@ describe('ETH Utility Functions', () => {
 				to: 'invalid-address' as any,
 			}
 
-			assert.throws(() => prepareSendEthTransaction(options, account), /Invalid Ethereum address/)
+			assert.throws(
+				() => prepareSendEthTransaction(options, account),
+				/Invalid Ethereum address/,
+			)
 		})
 	})
 
@@ -161,7 +164,7 @@ describe('ETH Utility Functions', () => {
 		test('should format transaction for JSON-RPC correctly', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
-			
+
 			const tx = {
 				from: account.address,
 				to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
@@ -186,7 +189,7 @@ describe('ETH Utility Functions', () => {
 		test('should handle undefined optional fields', () => {
 			const privateKey = generatePrivateKey()
 			const account = privateKeyToAccount(privateKey)
-			
+
 			const tx = {
 				from: account.address,
 				to: '0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4',
