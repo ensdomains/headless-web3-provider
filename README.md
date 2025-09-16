@@ -167,24 +167,4 @@ const otherBalance = await wallet.getBalance({
 })
 ```
 
-#### Utility Functions
-
-The library exports utility functions for working with ETH amounts and addresses:
-
-```js
-import { 
-  ethToWei, 
-  weiToEth, 
-  gweiToWei, 
-  weiToGwei, 
-  validateAddress 
-} from '@ensdomains/headless-web3-provider'
-
-// Convert between units
-const weiAmount = ethToWei('1.5') // 1500000000000000000n
-const ethAmount = weiToEth(1500000000000000000n) // '1.5'
-const gweiAmount = weiToGwei(20000000000n) // '20'
-
-// Validate addresses
-const validAddress = validateAddress('0x742d35cc6675c1f3d2d8e7e7b0c7a8c5f5e9c7a4')
-```
+**Note**: For general Ethereum utilities like converting between ETH/Wei/Gwei or validating addresses, use [viem](https://viem.sh) directly rather than this library. This library focuses specifically on E2E testing functionality.
